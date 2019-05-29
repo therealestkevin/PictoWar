@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">PictoWar</string>
+    <string name="subscription_key">cfd369c7b8dc4be785d5e719a2e62874</string>
+    <string name="endpoint">https://westus.api.cognitive.microsoft.com/face/v1.0</string>
 </resources>
