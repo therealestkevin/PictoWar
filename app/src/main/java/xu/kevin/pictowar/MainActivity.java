@@ -2,10 +2,9 @@ package xu.kevin.pictowar;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.media.Image;
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -15,8 +14,11 @@ import com.microsoft.projectoxford.face.FaceServiceClient;
 import com.microsoft.projectoxford.face.contract.Face;
 import com.microsoft.projectoxford.face.contract.VerifyResult;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -87,6 +89,50 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, index == 0 ? REQUEST_SELECT_IMAGE_0: REQUEST_SELECT_IMAGE_1 );
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        int index;
+        if (requestCode == REQUEST_SELECT_IMAGE_0) {
+            index = 0;
+        } else if (requestCode == REQUEST_SELECT_IMAGE_1) {
+            index = 1;
+        } else {
+            return;
+        }
+
+        if(resultCode == RESULT_OK){
+            Bitmap bmp = ImageHelper.loadSizeLimitedBitmapFromUri(data.getData(),getContentResolver());
+
+            if(bmp!=null){
+
+                if(index ==0){
+                    mBitmap = bmp;
+                    mFaceId = null;
+                }else{
+                    mBitmap1 = bmp;
+                    mFaceId1 = null;
+                }
+            }
+
+
+
+        }
+    }
+
+    private void detect(Bitmap bmp, int index){
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.JPEG, 100, output);
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(output.toByteArray());
+        try {
+            Face[] allFaces = new DetectionTask(index).execute(inputStream).get();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
 
     private class VerificationTask extends AsyncTask<Void, Void, VerifyResult> {
@@ -144,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
                         /* Which face attributes to analyze, currently we support:
                            age,gender,headPose,smile,facialHair */
                         new FaceServiceClient.FaceAttributeType[]{FaceServiceClient.FaceAttributeType.Age, FaceServiceClient.FaceAttributeType.Emotion
-                        , FaceServiceClient.FaceAttributeType.Gender});
+                        , FaceServiceClient.FaceAttributeType.Gender, FaceServiceClient.FaceAttributeType.Smile});
             }  catch (Exception e) {
                 mSucceed = false;
                 return null;
