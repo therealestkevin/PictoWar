@@ -1,5 +1,7 @@
 package xu.kevin.pictowar;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.media.Image;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -28,6 +30,18 @@ public class MainActivity extends AppCompatActivity {
 
     private Button verifyButton;
 
+
+    //Faces
+    private UUID mFaceId;
+    private UUID mFaceId1;
+
+    //Images
+    private Bitmap mBitmap;
+    private Bitmap mBitmap1;
+
+    // Flag to indicate which level's image is being selected
+    private static final int REQUEST_SELECT_IMAGE_0 = 0;
+    private static final int REQUEST_SELECT_IMAGE_1 = 1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,14 +60,14 @@ public class MainActivity extends AppCompatActivity {
         selectFace.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                selectImage(0);
             }
         });
 
         selectFace1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                selectImage(1);
             }
         });
 
@@ -67,28 +81,34 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    // Select the image indicated by index.
+    private void selectImage(int index) {
+        Intent intent = new Intent(this, SelectImageActivity.class);
+        startActivityForResult(intent, index == 0 ? REQUEST_SELECT_IMAGE_0: REQUEST_SELECT_IMAGE_1 );
+    }
+
 
 
     private class VerificationTask extends AsyncTask<Void, Void, VerifyResult> {
         // The IDs of two face to verify.
-        private UUID mFaceId0;
+        private UUID mFaceId;
         private UUID mFaceId1;
 
-        VerificationTask (UUID faceId0, UUID faceId1) {
-            mFaceId0 = faceId0;
+        VerificationTask (UUID faceId, UUID faceId1) {
+            mFaceId = faceId;
             mFaceId1 = faceId1;
         }
 
         @Override
         protected VerifyResult doInBackground(Void... params) {
-            
+
             FaceServiceClient faceServiceClient = PictoFaceClient.getFaceServiceClient();
             try{
 
 
                 // Start verification.
                 return faceServiceClient.verify(
-                        mFaceId0,      /* The first face ID to verify */
+                        mFaceId,      /* The first face ID to verify */
                         mFaceId1);     /* The second face ID to verify */
             }  catch (Exception e) {
 
