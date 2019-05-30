@@ -1,11 +1,15 @@
 package xu.kevin.pictowar;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -16,7 +20,11 @@ import com.microsoft.projectoxford.face.contract.VerifyResult;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -132,6 +140,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void verification(){
+
+    }
+
+
 
 
 
@@ -140,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
         private UUID mFaceId;
         private UUID mFaceId1;
 
-        VerificationTask (UUID faceId, UUID faceId1) {
+        VerificationTask(UUID faceId, UUID faceId1) {
             mFaceId = faceId;
             mFaceId1 = faceId1;
         }
@@ -149,21 +162,28 @@ public class MainActivity extends AppCompatActivity {
         protected VerifyResult doInBackground(Void... params) {
 
             FaceServiceClient faceServiceClient = PictoFaceClient.getFaceServiceClient();
-            try{
+            try {
 
 
                 // Start verification.
                 return faceServiceClient.verify(
                         mFaceId,      /* The first face ID to verify */
                         mFaceId1);     /* The second face ID to verify */
-            }  catch (Exception e) {
+            } catch (Exception e) {
 
                 return null;
             }
         }
 
+        @Override
+        protected void onPostExecute(VerifyResult result) {
+            if (result != null) {
 
 
+            }
+
+
+        }
     }
 
     private class DetectionTask extends AsyncTask<InputStream, Void, Face[]> {
@@ -195,6 +215,74 @@ public class MainActivity extends AppCompatActivity {
                 mSucceed = false;
                 return null;
             }
+        }
+    }
+
+    private class FaceListAdapter extends BaseAdapter {
+        // The detected faces.
+        List<Face> faces;
+
+        int mIndex;
+
+        // The thumbnails of detected faces.
+        List<Bitmap> faceThumbnails;
+
+        // Initialize with detection result and index indicating on which image the result is got.
+        FaceListAdapter(Face[] detectionResult, int index) {
+            faces = new ArrayList<>();
+            faceThumbnails = new ArrayList<>();
+            mIndex = index;
+
+            if (detectionResult != null) {
+                faces = Arrays.asList(detectionResult);
+                for (Face face: faces) {
+                    try {
+                        // Crop face thumbnail without landmarks drawn.
+                        faceThumbnails.add(ImageHelper.generateFaceThumbnail(
+                                index == 0 ? mBitmap: mBitmap1, face.faceRectangle));
+                    } catch (IOException e) {
+                        // Show the exception when generating face thumbnail fails.
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        @Override
+        public int getCount() {
+            return faces.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return faces.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(final int position, View convertView, ViewGroup parent) {
+            if (convertView == null) {
+                LayoutInflater layoutInflater =
+                        (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                convertView = layoutInflater.inflate(R.layout.item_face, parent, false);
+            }
+            convertView.setId(position);
+
+            Bitmap thumbnailToShow = faceThumbnails.get(position);
+            if (mIndex == 0 && faces.get(position).faceId.equals(mFaceId)) {
+                thumbnailToShow = ImageHelper.highlightSelectedFaceThumbnail(thumbnailToShow);
+            } else if (mIndex == 1 && faces.get(position).faceId.equals(mFaceId1)){
+                thumbnailToShow = ImageHelper.highlightSelectedFaceThumbnail(thumbnailToShow);
+            }
+
+            // Show the face thumbnail.
+            ((ImageView)convertView.findViewById(R.id.image_face)).setImageBitmap(thumbnailToShow);
+
+            return convertView;
         }
     }
 }
