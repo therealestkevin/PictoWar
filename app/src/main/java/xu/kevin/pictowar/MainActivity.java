@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.microsoft.projectoxford.face.FaceServiceClient;
+import com.microsoft.projectoxford.face.FaceServiceRestClient;
 import com.microsoft.projectoxford.face.contract.Face;
 
 import java.io.ByteArrayInputStream;
@@ -196,7 +197,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected Face[] doInBackground(InputStream... params) {
 
-            FaceServiceClient faceServiceClient = PictoFaceClient.getFaceServiceClient();
+            FaceServiceClient faceServiceClient = new FaceServiceRestClient(getString(R.string.endpoint), getString(R.string.subscription_key));
+                    //PictoFaceClient.getFaceServiceClient();
             try{
 
 
