@@ -3,6 +3,7 @@ package xu.kevin.pictowar;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -16,7 +17,6 @@ import android.widget.ListView;
 
 import com.microsoft.projectoxford.face.FaceServiceClient;
 import com.microsoft.projectoxford.face.contract.Face;
-import com.microsoft.projectoxford.face.contract.VerifyResult;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -34,24 +34,24 @@ public class MainActivity extends AppCompatActivity {
     private ImageView confirmedFace;
     private ListView faceList;
 
-    private Button selectFace1;
+
     private ImageView confirmedFace1;
-    private ListView faceList1;
+
 
     private Button verifyButton;
 
 
     //Faces
     private UUID mFaceId;
-    private UUID mFaceId1;
+
 
     //Images
     private Bitmap mBitmap;
-    private Bitmap mBitmap1;
+
 
     // Flag to indicate which level's image is being selected
     private static final int REQUEST_SELECT_IMAGE_0 = 0;
-    private static final int REQUEST_SELECT_IMAGE_1 = 1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,30 +61,28 @@ public class MainActivity extends AppCompatActivity {
         confirmedFace = findViewById(R.id.confirmedFace);
         faceList = findViewById(R.id.faceList);
 
-        selectFace1 = findViewById(R.id.selectFace1);
+
         confirmedFace1 = findViewById(R.id.confirmedFace1);
-        faceList1 = findViewById(R.id.faceList1);
+
 
         verifyButton = findViewById(R.id.verifyButton);
 
         selectFace.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                selectImage(0);
+                selectImage();
             }
         });
 
-        selectFace1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                selectImage(1);
-            }
-        });
 
         verifyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                    BitmapDrawable bmpd= (BitmapDrawable) confirmedFace.getDrawable();
+                    confirmedFace1.setImageBitmap(bmpd.getBitmap());
 
+                    //With further implementation of database, upon set face click, the selected face will be
+                    //Saved within DB as the official face of the user
             }
         });
 
@@ -92,47 +90,50 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Select the image indicated by index.
-    private void selectImage(int index) {
+    private void selectImage() {
         Intent intent = new Intent(this, SelectImageActivity.class);
-        startActivityForResult(intent, index == 0 ? REQUEST_SELECT_IMAGE_0: REQUEST_SELECT_IMAGE_1 );
+        startActivityForResult(intent, REQUEST_SELECT_IMAGE_0);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        int index;
-        if (requestCode == REQUEST_SELECT_IMAGE_0) {
-            index = 0;
-        } else if (requestCode == REQUEST_SELECT_IMAGE_1) {
-            index = 1;
-        } else {
-            return;
-        }
 
         if(resultCode == RESULT_OK){
             Bitmap bmp = ImageHelper.loadSizeLimitedBitmapFromUri(data.getData(),getContentResolver());
 
             if(bmp!=null){
 
-                if(index ==0){
+
                     mBitmap = bmp;
+                    //confirmedFace.setImageBitmap(bmp);
                     mFaceId = null;
-                }else{
-                    mBitmap1 = bmp;
-                    mFaceId1 = null;
                 }
-            }
 
-
+            detect(bmp);
 
         }
+
     }
 
-    private void detect(Bitmap bmp, int index){
+
+    private void detect(Bitmap bmp){
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         bmp.compress(Bitmap.CompressFormat.JPEG, 100, output);
         ByteArrayInputStream inputStream = new ByteArrayInputStream(output.toByteArray());
         try {
-            Face[] allFaces = new DetectionTask(index).execute(inputStream).get();
+            Face[] allFaces = new DetectionTask().execute(inputStream).get();
+            FaceListAdapter fld = new FaceListAdapter(allFaces);
+            if(fld.faces.size()!=0){
+
+                mFaceId = fld.faces.get(0).faceId;
+
+                confirmedFace.setImageBitmap(fld.faceThumbnails.get(0));
+
+            }
+
+            faceList.setAdapter(fld);
+
+            faceList.setVisibility(View.VISIBLE);
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
@@ -140,14 +141,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void verification(){
-
-    }
 
 
 
 
 
+    /*
     private class VerificationTask extends AsyncTask<Void, Void, VerifyResult> {
         // The IDs of two face to verify.
         private UUID mFaceId;
@@ -167,8 +166,8 @@ public class MainActivity extends AppCompatActivity {
 
                 // Start verification.
                 return faceServiceClient.verify(
-                        mFaceId,      /* The first face ID to verify */
-                        mFaceId1);     /* The second face ID to verify */
+                        mFaceId,      //The first face ID to verify
+                        mFaceId1);     // The second face ID to verify
             } catch (Exception e) {
 
                 return null;
@@ -185,15 +184,14 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+    */
 
     private class DetectionTask extends AsyncTask<InputStream, Void, Face[]> {
         // Index indicates detecting in which of the two images.
-        private int mIndex;
+
         private boolean mSucceed = true;
 
-        DetectionTask(int index) {
-            mIndex = index;
-        }
+
 
         @Override
         protected Face[] doInBackground(InputStream... params) {
@@ -222,16 +220,16 @@ public class MainActivity extends AppCompatActivity {
         // The detected faces.
         List<Face> faces;
 
-        int mIndex;
+
 
         // The thumbnails of detected faces.
         List<Bitmap> faceThumbnails;
 
         // Initialize with detection result and index indicating on which image the result is got.
-        FaceListAdapter(Face[] detectionResult, int index) {
+        FaceListAdapter(Face[] detectionResult) {
             faces = new ArrayList<>();
             faceThumbnails = new ArrayList<>();
-            mIndex = index;
+
 
             if (detectionResult != null) {
                 faces = Arrays.asList(detectionResult);
@@ -239,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         // Crop face thumbnail without landmarks drawn.
                         faceThumbnails.add(ImageHelper.generateFaceThumbnail(
-                                index == 0 ? mBitmap: mBitmap1, face.faceRectangle));
+                                mBitmap,face.faceRectangle));
                     } catch (IOException e) {
                         // Show the exception when generating face thumbnail fails.
                         e.printStackTrace();
@@ -273,9 +271,7 @@ public class MainActivity extends AppCompatActivity {
             convertView.setId(position);
 
             Bitmap thumbnailToShow = faceThumbnails.get(position);
-            if (mIndex == 0 && faces.get(position).faceId.equals(mFaceId)) {
-                thumbnailToShow = ImageHelper.highlightSelectedFaceThumbnail(thumbnailToShow);
-            } else if (mIndex == 1 && faces.get(position).faceId.equals(mFaceId1)){
+            if (faces.get(position).faceId.equals(mFaceId)) {
                 thumbnailToShow = ImageHelper.highlightSelectedFaceThumbnail(thumbnailToShow);
             }
 
