@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -35,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageView confirmedFace;
     private ListView faceList;
 
+    private FaceListAdapter officialFLD;
 
     private ImageView confirmedFace1;
 
@@ -61,6 +63,16 @@ public class MainActivity extends AppCompatActivity {
         selectFace = findViewById(R.id.selectFace);
         confirmedFace = findViewById(R.id.confirmedFace);
         faceList = findViewById(R.id.faceList);
+
+        faceList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                FaceListAdapter curAdapt = officialFLD;
+                mFaceId = curAdapt.faces.get(position).faceId;
+                confirmedFace.setImageBitmap(curAdapt.faceThumbnails.get(position));
+                faceList.setAdapter(curAdapt);
+            }
+        });
 
 
         confirmedFace1 = findViewById(R.id.confirmedFace1);
@@ -133,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             faceList.setAdapter(fld);
-
+            officialFLD = fld;
             faceList.setVisibility(View.VISIBLE);
         } catch (ExecutionException e) {
             e.printStackTrace();
@@ -198,7 +210,8 @@ public class MainActivity extends AppCompatActivity {
         protected Face[] doInBackground(InputStream... params) {
 
             FaceServiceClient faceServiceClient = new FaceServiceRestClient(getString(R.string.endpoint), getString(R.string.subscription_key));
-                    //PictoFaceClient.getFaceServiceClient();
+            //Use Direct Reference Next Time instead of indirect Application reference that doesn't work
+            //PictoFaceClient.getFaceServiceClient();
             try{
 
 
