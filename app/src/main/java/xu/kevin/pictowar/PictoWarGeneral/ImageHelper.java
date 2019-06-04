@@ -1,4 +1,4 @@
-package xu.kevin.pictowar;
+package xu.kevin.pictowar.PictoWarGeneral;
 
 import android.content.ContentResolver;
 import android.database.Cursor;

@@ -30,7 +30,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-package xu.kevin.pictowar;
+package xu.kevin.pictowar.PictoWarGeneral;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -45,6 +45,8 @@ import android.widget.TextView;
 
 import java.io.File;
 import java.io.IOException;
+
+import xu.kevin.pictowar.R;
 
 // The activity for the user to select a image and to detect faces in the image.
 public class SelectImageActivity extends AppCompatActivity {

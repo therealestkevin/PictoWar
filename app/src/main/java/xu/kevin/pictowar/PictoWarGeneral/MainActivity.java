@@ -1,4 +1,4 @@
-package xu.kevin.pictowar;
+package xu.kevin.pictowar.PictoWarGeneral;
 
 import android.content.Context;
 import android.content.Intent;
@@ -29,6 +29,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+
+import xu.kevin.pictowar.R;
 
 public class MainActivity extends AppCompatActivity {
 

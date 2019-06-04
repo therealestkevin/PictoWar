@@ -7,7 +7,7 @@
 
     android:baselineAligned="false"
     android:orientation="vertical"
-    tools:context="xu.kevin.pictowar.SelectImageActivity">
+    tools:context="xu.kevin.pictowar.PictoWarGeneral.SelectImageActivity">
 
     <RelativeLayout android:layout_width="match_parent"
         android:layout_height="match_parent"

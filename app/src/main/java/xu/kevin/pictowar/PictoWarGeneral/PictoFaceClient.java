@@ -1,9 +1,12 @@
-package xu.kevin.pictowar;
+package xu.kevin.pictowar.PictoWarGeneral;
 
 import android.app.Application;
 
 import com.microsoft.projectoxford.face.FaceServiceClient;
 import com.microsoft.projectoxford.face.FaceServiceRestClient;
+
+import xu.kevin.pictowar.R;
+
 
 public class PictoFaceClient extends Application {
     private static FaceServiceClient PictoClient;
