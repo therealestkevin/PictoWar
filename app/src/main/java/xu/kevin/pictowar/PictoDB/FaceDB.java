@@ -10,7 +10,7 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 
 
-@Database(entities = {FaceInfo.class},version=1,exportSchema = false)
+@Database(entities = {FaceInfo.class},version=2,exportSchema = false)
 @TypeConverters({FaceDAO.Converters.class})
 public abstract class FaceDB extends RoomDatabase {
 

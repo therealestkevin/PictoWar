@@ -10,14 +10,16 @@ import java.util.UUID;
 public class FaceInfo {
     private String userName;
     private UUID userFace;
+    private String imageFilePath;
 
     @PrimaryKey(autoGenerate = true)
     private int Id;
 
 
-    public FaceInfo(String userName, UUID userFace){
+    public FaceInfo(String userName, UUID userFace, String imageFilePath){
         this.userName = userName;
         this.userFace = userFace;
+        this.imageFilePath = imageFilePath;
     }
 
     public String getUserName() {
@@ -42,5 +44,13 @@ public class FaceInfo {
 
     public void setId(int id) {
         Id = id;
+    }
+
+    public String getImageFilePath() {
+        return imageFilePath;
+    }
+
+    public void setImageFilePath(String imageFilePath) {
+        this.imageFilePath = imageFilePath;
     }
 }
