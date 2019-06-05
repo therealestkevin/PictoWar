@@ -20,6 +20,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.microsoft.projectoxford.face.FaceServiceClient;
 import com.microsoft.projectoxford.face.FaceServiceRestClient;
@@ -114,9 +115,13 @@ public class MainActivity extends AppCompatActivity {
         verifyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                    BitmapDrawable bmpd= (BitmapDrawable) confirmedFace.getDrawable();
-                    confirmedFace1.setImageBitmap(bmpd.getBitmap());
-                    storeImage(bmpd.getBitmap());
+                    if(officialFLD == null || officialFLD.faces.size()  == 0){
+                        Toast.makeText(getApplicationContext(), "no image selected", Toast.LENGTH_LONG ).show();
+                    }else {
+                        BitmapDrawable bmpd = (BitmapDrawable) confirmedFace.getDrawable();
+                        confirmedFace1.setImageBitmap(bmpd.getBitmap());
+                        storeImage(bmpd.getBitmap());
+                    }
                     //With further implementation of database, upon set face click, the selected face will be
                     //Saved within DB as the official face of the user
             }
