@@ -3,6 +3,7 @@ package xu.kevin.pictowar.PictoWarGeneral;
 import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -10,7 +11,9 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -49,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private Button selectFace;
     private ImageView confirmedFace;
     private ListView faceList;
-
+    private Button battleBtn;
     private FaceListAdapter officialFLD;
 
     private ImageView confirmedFace1;
@@ -80,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
         localFaceInfo = mainModel.getFaceInfo();
 
-
+        battleBtn = findViewById(R.id.battleBtn);
         selectFace = findViewById(R.id.selectFace);
         confirmedFace = findViewById(R.id.confirmedFace);
         faceList = findViewById(R.id.faceList);
@@ -98,8 +102,9 @@ public class MainActivity extends AppCompatActivity {
 
         confirmedFace1 = findViewById(R.id.confirmedFace1);
 
-        if(localFaceInfo!=null){
+        if(localFaceInfo!=null && localFaceInfo.getUserFace()!=null){
             confirmedFace1.setImageBitmap(BitmapFactory.decodeFile(localFaceInfo.getImageFilePath()));
+            battleBtn.setVisibility(View.VISIBLE);
         }
 
         verifyButton = findViewById(R.id.verifyButton);
@@ -116,14 +121,72 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                     if(officialFLD == null || officialFLD.faces.size()  == 0){
-                        Toast.makeText(getApplicationContext(), "no image selected", Toast.LENGTH_LONG ).show();
+                        Toast.makeText(getApplicationContext(), "No Image Selected", Toast.LENGTH_LONG ).show();
                     }else {
                         BitmapDrawable bmpd = (BitmapDrawable) confirmedFace.getDrawable();
                         confirmedFace1.setImageBitmap(bmpd.getBitmap());
                         storeImage(bmpd.getBitmap());
+                        battleBtn.setVisibility(View.VISIBLE);
                     }
                     //With further implementation of database, upon set face click, the selected face will be
                     //Saved within DB as the official face of the user
+            }
+        });
+
+        battleBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+
+                builder.setTitle("Enter Username");
+
+                final EditText userInput = new EditText(getApplicationContext());
+
+                userInput.setInputType(InputType.TYPE_CLASS_TEXT);
+
+                builder.setView(userInput);
+
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+                AlertDialog dialog = builder.create();
+                dialog.show();
+
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        boolean closeDia = false;
+                        String curUser = userInput.getText().toString();
+
+                        if(curUser.equals("")){
+                            AlertDialog.Builder checkUser = new AlertDialog.Builder(MainActivity.this);
+                            checkUser.setMessage("Please Enter A Username").setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            }).create().show();
+                        }else{
+                            //Start Battle Activity
+                            //Attach User in the Intent
+
+                            closeDia = true;
+                        }
+                        if(closeDia){
+                            dialog.dismiss();
+                        }
+
+
+                    }
+                });
             }
         });
 
@@ -193,8 +256,9 @@ public class MainActivity extends AppCompatActivity {
                     //confirmedFace.setImageBitmap(bmp);
                     mFaceId = null;
                 }
-
-            detect(bmp);
+            if (bmp != null) {
+                detect(bmp);
+            }
 
         }
 
@@ -214,10 +278,13 @@ public class MainActivity extends AppCompatActivity {
 
                 confirmedFace.setImageBitmap(fld.faceThumbnails.get(0));
 
+            }else {
+                Toast.makeText(getApplicationContext(),"No Faces Detected",Toast.LENGTH_LONG).show();
             }
 
             faceList.setAdapter(fld);
             officialFLD = fld;
+
             faceList.setVisibility(View.VISIBLE);
         } catch (ExecutionException e) {
             e.printStackTrace();
