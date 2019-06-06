@@ -11,10 +11,11 @@
         android:layout_width="79dp"
         android:layout_height="270dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
         android:background="@android:color/darker_gray"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.858"
         app:layout_constraintStart_toEndOf="@+id/confirmedFace"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -23,10 +24,8 @@
         android:layout_width="209dp"
         android:layout_height="235dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="44dp"
+        app:layout_constraintStart_toEndOf="@+id/selectFace"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="?android:attr/colorButtonNormal" />
 
@@ -35,11 +34,11 @@
         android:layout_width="209dp"
         android:layout_height="235dp"
         android:layout_marginStart="8dp"
+        android:layout_marginTop="28dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginBottom="68dp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/verifyButton"
         app:srcCompat="?android:attr/colorButtonNormal" />
 
     <Button
@@ -47,12 +46,12 @@
         android:layout_width="88dp"
         android:layout_height="59dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="124dp"
+        android:layout_marginTop="128dp"
         android:layout_marginEnd="8dp"
         android:backgroundTint="@color/colorPrimary"
         android:text="Select Image"
         app:layout_constraintEnd_toStartOf="@+id/confirmedFace1"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -61,13 +60,12 @@
         android:layout_width="114dp"
         android:layout_height="67dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="52dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
         android:backgroundTint="@color/colorPrimary"
         android:text="Set Face"
-        app:layout_constraintBottom_toTopOf="@+id/confirmedFace1"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/confirmedFace" />
 
