@@ -177,7 +177,9 @@ public class MainActivity extends AppCompatActivity {
                         }else{
                             //Start Battle Activity
                             //Attach User in the Intent
-                            
+                            Intent battleIntent = new Intent(getApplicationContext(),BattleActivity.class);
+                            battleIntent.putExtra("username",curUser);
+                            startActivity(battleIntent);
                             closeDia = true;
                         }
                         if(closeDia){
