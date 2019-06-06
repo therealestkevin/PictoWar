@@ -9,9 +9,9 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import androidx.exifinterface.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.media.ExifInterface;
 
 import com.microsoft.projectoxford.face.contract.Face;
 import com.microsoft.projectoxford.face.contract.FaceRectangle;
