@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
     private ListView faceList;
     private Button battleBtn;
     private FaceListAdapter officialFLD;
-
+    private boolean hasConfirmedFace = false;
     private ImageView confirmedFace1;
 
 
@@ -105,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
         if(localFaceInfo!=null && localFaceInfo.getUserFace()!=null){
             confirmedFace1.setImageBitmap(BitmapFactory.decodeFile(localFaceInfo.getImageFilePath()));
             battleBtn.setVisibility(View.VISIBLE);
+            hasConfirmedFace = true;
         }
 
         verifyButton = findViewById(R.id.verifyButton);
@@ -127,6 +128,7 @@ public class MainActivity extends AppCompatActivity {
                         confirmedFace1.setImageBitmap(bmpd.getBitmap());
                         storeImage(bmpd.getBitmap());
                         battleBtn.setVisibility(View.VISIBLE);
+                        hasConfirmedFace = true;
                     }
                     //With further implementation of database, upon set face click, the selected face will be
                     //Saved within DB as the official face of the user
@@ -136,60 +138,61 @@ public class MainActivity extends AppCompatActivity {
         battleBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 
-                builder.setTitle("Enter Username");
+                    builder.setTitle("Enter Username");
 
-                final EditText userInput = new EditText(getApplicationContext());
+                    final EditText userInput = new EditText(getApplicationContext());
 
-                userInput.setInputType(InputType.TYPE_CLASS_TEXT);
+                    userInput.setInputType(InputType.TYPE_CLASS_TEXT);
 
-                builder.setView(userInput);
+                    builder.setView(userInput);
 
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                    }
-                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
-
-                AlertDialog dialog = builder.create();
-                dialog.show();
-
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        boolean closeDia = false;
-                        String curUser = userInput.getText().toString();
-
-                        if(curUser.equals("")){
-                            AlertDialog.Builder checkUser = new AlertDialog.Builder(MainActivity.this);
-                            checkUser.setMessage("Please Enter A Username").setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            }).create().show();
-                        }else{
-                            //Start Battle Activity
-                            //Attach User in the Intent
-                            Intent battleIntent = new Intent(getApplicationContext(),BattleActivity.class);
-                            battleIntent.putExtra("username",curUser);
-                            startActivity(battleIntent);
-                            closeDia = true;
+                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
                         }
-                        if(closeDia){
-                            dialog.dismiss();
+                    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
                         }
+                    });
+
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            boolean closeDia = false;
+                            String curUser = userInput.getText().toString();
+
+                            if (curUser.equals("")) {
+                                AlertDialog.Builder checkUser = new AlertDialog.Builder(MainActivity.this);
+                                checkUser.setMessage("Please Enter A Username").setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                }).create().show();
+                            } else {
+                                //Start Battle Activity
+                                //Attach User in the Intent
+                                Intent battleIntent = new Intent(getApplicationContext(), BattleActivity.class);
+                                battleIntent.putExtra("username", curUser);
+                                startActivity(battleIntent);
+                                closeDia = true;
+                            }
+                            if (closeDia) {
+                                dialog.dismiss();
+                            }
 
 
-                    }
-                });
-            }
+                        }
+                    });
+                }
+
         });
 
 
