@@ -18,8 +18,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".PictoWarGeneral.MainActivity"></activity>
-        <activity android:name=".PictoWarGeneral.BattleActivity" />
+        <activity android:name=".PictoWarGeneral.MainActivity"
+            android:screenOrientation="portrait"></activity>
+        <activity android:name=".PictoWarGeneral.BattleActivity"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".PictoWarGeneral.SplashScreen"
             android:screenOrientation="portrait">

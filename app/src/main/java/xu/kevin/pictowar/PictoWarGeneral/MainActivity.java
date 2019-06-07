@@ -148,11 +148,17 @@ public class MainActivity extends AppCompatActivity {
 
                     builder.setView(userInput);
 
-                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    builder.setPositiveButton("HOST", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                         }
-                    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    }).setNeutralButton("DONT HOST", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    })
+                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.cancel();
@@ -181,6 +187,7 @@ public class MainActivity extends AppCompatActivity {
                                 //Attach User in the Intent
                                 Intent battleIntent = new Intent(getApplicationContext(), BattleActivity.class);
                                 battleIntent.putExtra("username", curUser);
+                                battleIntent.putExtra("bool",true);
                                 startActivity(battleIntent);
                                 closeDia = true;
                             }
@@ -191,6 +198,36 @@ public class MainActivity extends AppCompatActivity {
 
                         }
                     });
+                dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        boolean closeDia = false;
+                        String curUser = userInput.getText().toString();
+
+                        if (curUser.equals("")) {
+                            AlertDialog.Builder checkUser = new AlertDialog.Builder(MainActivity.this);
+                            checkUser.setMessage("Please Enter A Username").setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            }).create().show();
+                        } else {
+                            //Start Battle Activity
+                            //Attach User in the Intent
+                            Intent battleIntent = new Intent(getApplicationContext(), BattleActivity.class);
+                            battleIntent.putExtra("username", curUser);
+                            battleIntent.putExtra("bool",false);
+                            startActivity(battleIntent);
+                            closeDia = true;
+                        }
+                        if (closeDia) {
+                            dialog.dismiss();
+                        }
+
+
+                    }
+                });
                 }
 
         });

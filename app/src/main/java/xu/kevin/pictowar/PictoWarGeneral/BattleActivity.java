@@ -62,7 +62,7 @@ public class BattleActivity extends AppCompatActivity {
     private TextView opponentNm;
     private TextView connectionStatus;
     private Button sendImageBtn;
-
+    private boolean isHost = true;
     private static final String[] REQUIRED_PERMISSIONS =
             new String[] {
                     Manifest.permission.BLUETOOTH,
@@ -74,12 +74,20 @@ public class BattleActivity extends AppCompatActivity {
             };
 
     private static final int REQUEST_CODE_REQUIRED_PERMISSIONS = 1;
+
+    private static String[] PERMISSIONS_STORAGE = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
     private final PayloadCallback payloadCallback =
             new PayloadCallback() {
                 @Override
                 public void onPayloadReceived(String endpointId, Payload payload) {
                     try{
                         recievedImage = BitmapFactory.decodeFile(payload.asFile().asJavaFile().getAbsolutePath());
+
+                        int temp = 0;
+
                     }catch(NullPointerException e){
                         e.printStackTrace();
                     }
@@ -142,9 +150,22 @@ public class BattleActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-
+        verifyStoragePermissions(this);
         if (!hasPermissions(this, REQUIRED_PERMISSIONS)) {
             requestPermissions(REQUIRED_PERMISSIONS, REQUEST_CODE_REQUIRED_PERMISSIONS);
+        }
+    }
+    public static void verifyStoragePermissions(Activity activity) {
+        // Check if we have write permission
+        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // We don't have permission so prompt the user
+            ActivityCompat.requestPermissions(
+                    activity,
+                    PERMISSIONS_STORAGE,
+                    1
+            );
         }
     }
 
@@ -191,6 +212,7 @@ public class BattleActivity extends AppCompatActivity {
             if(bundle.getString("username")!=null){
                 userName = bundle.getString("username");
                 nameTextView.setText("Your Name: "+userName);
+                isHost = bundle.getBoolean("bool");
             }
 
         }
@@ -206,8 +228,15 @@ public class BattleActivity extends AppCompatActivity {
                     startActivityForResult(intent, 0);
             }
         });
-        startAdvertising();
-        startDiscovery();
+
+        if(!isHost){
+            startAdvertising();
+        }else{
+            startAdvertising();
+            startDiscovery();
+        }
+
+
 
 
     }
@@ -221,7 +250,7 @@ public class BattleActivity extends AppCompatActivity {
 
 
             try{
-                ParcelFileDescriptor pfd = getContentResolver().openFileDescriptor(uri,"r");
+                ParcelFileDescriptor pfd = getContentResolver().openFileDescriptor(uri,"r" );
                 Payload filePayload = Payload.fromFile(pfd);
                 connectionsClient.sendPayload(opponentEndpointId,filePayload);
             }catch(FileNotFoundException e){
