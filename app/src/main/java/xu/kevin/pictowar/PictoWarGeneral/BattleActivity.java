@@ -250,6 +250,7 @@ public class BattleActivity extends AppCompatActivity {
 
 
             try{
+                String temp = uri.getPath();
                 ParcelFileDescriptor pfd = getContentResolver().openFileDescriptor(uri,"r" );
                 Payload filePayload = Payload.fromFile(pfd);
                 connectionsClient.sendPayload(opponentEndpointId,filePayload);
