@@ -13,7 +13,9 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
+import android.graphics.Bitmap;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 
@@ -69,6 +71,7 @@ public class SelectImageActivity extends AppCompatActivity {
                         String bob = "ekrjhqewrqwe";
                     } else {
                         imageUri = data.getData();
+                        imageUri = compressURI(this, imageUri);
                         potentialPath = getRealPathFromURI(getApplicationContext(),imageUri);
 
                         String bob = "eqwqw";
@@ -116,7 +119,14 @@ public class SelectImageActivity extends AppCompatActivity {
             }
         }
     }
-
+    private Uri compressURI(Context context, Uri imageUri) {
+        Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(),imageUri);
+        bitmap = Bitmap.createScaledBitmap(bitmap, 10, 10, true);
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+        String path = MediaStore.Images.Media.insertImage(context.getContentResolver(), bitmap, "Title", null);
+        return Uri.parse(path);
+    }
     // Album/Gallery
     public void selectImageInAlbum(View view) {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
