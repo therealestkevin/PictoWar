@@ -120,12 +120,18 @@ public class SelectImageActivity extends AppCompatActivity {
         }
     }
     private Uri compressURI(Context context, Uri imageUri) {
-        Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(),imageUri);
-        bitmap = Bitmap.createScaledBitmap(bitmap, 10, 10, true);
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-        String path = MediaStore.Images.Media.insertImage(context.getContentResolver(), bitmap, "Title", null);
-        return Uri.parse(path);
+        try{
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(),imageUri);
+            bitmap = Bitmap.createScaledBitmap(bitmap, 10, 10, true);
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+            String path = MediaStore.Images.Media.insertImage(context.getContentResolver(), bitmap, "Title", null);
+            return Uri.parse(path);
+        }catch(IOException e){
+            e.printStackTrace();
+            return imageUri;
+        }
+
     }
     // Album/Gallery
     public void selectImageInAlbum(View view) {
