@@ -4,6 +4,7 @@ package xu.kevin.pictowar.PictoWarGeneral;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -15,6 +16,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.graphics.Bitmap;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -122,10 +124,13 @@ public class SelectImageActivity extends AppCompatActivity {
     private Uri compressURI(Context context, Uri imageUri) {
         try{
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(),imageUri);
-            bitmap = Bitmap.createScaledBitmap(bitmap, 10, 10, true);
-            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-            String path = MediaStore.Images.Media.insertImage(context.getContentResolver(), bitmap, "Title", null);
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 80, out);
+            Bitmap decoded = BitmapFactory.decodeStream(new ByteArrayInputStream(out.toByteArray()));
+            //bitmap = Bitmap.createScaledBitmap(bitmap, 10, 10, true);
+            //ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            //bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+            String path = MediaStore.Images.Media.insertImage(context.getContentResolver(), decoded, "Title", null);
             return Uri.parse(path);
         }catch(IOException e){
             e.printStackTrace();
