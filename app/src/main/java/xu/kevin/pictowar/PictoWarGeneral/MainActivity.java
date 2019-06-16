@@ -1,16 +1,24 @@
 package xu.kevin.pictowar.PictoWarGeneral;
 
+import android.Manifest;
+import android.app.Activity;
 import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
@@ -49,7 +57,7 @@ import xu.kevin.pictowar.PictoDB.FaceInfo;
 import xu.kevin.pictowar.R;
 
 public class MainActivity extends AppCompatActivity {
-
+    public static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 123;
     private Button selectFace;
     private ImageView confirmedFace;
     private ListView faceList;
@@ -244,7 +252,7 @@ public class MainActivity extends AppCompatActivity {
         }
         try {
             FileOutputStream fos = new FileOutputStream(pictureFile);
-            image.compress(Bitmap.CompressFormat.PNG, 90, fos);
+            image.compress(Bitmap.CompressFormat.JPEG, 50, fos);
             fos.close();
             mainModel.insertFaceInfo(new FaceInfo("",mFaceId,pictureFile.getAbsolutePath()));
         } catch (FileNotFoundException e) {
@@ -477,4 +485,9 @@ public class MainActivity extends AppCompatActivity {
             return convertView;
         }
     }
+
+
+
+
+
 }
