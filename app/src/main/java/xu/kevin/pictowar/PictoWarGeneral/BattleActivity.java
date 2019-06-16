@@ -48,6 +48,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -266,6 +267,30 @@ public class BattleActivity extends AppCompatActivity {
 
     }
 
+    private Uri getImageUri(Context context,  Uri Image) {
+        try {
+
+            Bitmap inImage = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Image);
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            File tempDir= Environment.getExternalStorageDirectory();
+            tempDir=new File(tempDir.getAbsolutePath()+"/.temp/");
+            tempDir.mkdir();
+            File tempFile = File.createTempFile("title", ".jpg", tempDir);
+            //   ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            inImage.compress(Bitmap.CompressFormat.JPEG, 20, bytes);
+            //Bitmap decoded = BitmapFactory.decodeStream(new ByteArrayInputStream(bytes.toByteArray()));
+            byte[] bitmapData = bytes.toByteArray();
+            //write the bytes in file
+            FileOutputStream fos = new FileOutputStream(tempFile);
+            fos.write(bitmapData);
+            fos.flush();
+            fos.close();
+            return Uri.fromFile(tempFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Image;
+        }
+    }
 
 
     private void startDiscovery() {

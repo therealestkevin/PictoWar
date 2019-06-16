@@ -132,11 +132,13 @@ public class MainActivity extends AppCompatActivity {
                     if(officialFLD == null || officialFLD.faces.size()  == 0){
                         Toast.makeText(getApplicationContext(), "No Image Selected", Toast.LENGTH_LONG ).show();
                     }else {
+
                         BitmapDrawable bmpd = (BitmapDrawable) confirmedFace.getDrawable();
                         confirmedFace1.setImageBitmap(bmpd.getBitmap());
                         storeImage(bmpd.getBitmap());
                         battleBtn.setVisibility(View.VISIBLE);
                         hasConfirmedFace = true;
+
                     }
                     //With further implementation of database, upon set face click, the selected face will be
                     //Saved within DB as the official face of the user
@@ -485,6 +487,9 @@ public class MainActivity extends AppCompatActivity {
             return convertView;
         }
     }
+
+
+
 
 
 
