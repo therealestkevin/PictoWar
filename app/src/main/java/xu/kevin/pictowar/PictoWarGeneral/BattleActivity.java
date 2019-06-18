@@ -222,13 +222,11 @@ public class BattleActivity extends AppCompatActivity {
 
         }
 
-
     connectionsClient = Nearby.getConnectionsClient(this);
 
         sendImageBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                     Intent intent = new Intent(getApplicationContext(), SelectImageActivity.class);
                     startActivityForResult(intent, 0);
             }
@@ -240,20 +238,12 @@ public class BattleActivity extends AppCompatActivity {
             startAdvertising();
             startDiscovery();
         }
-
-
-
-
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         if (resultCode == RESULT_OK) {
             Uri uri = data.getData();
-
-
-
-
             try{
                 String temp = uri.getPath();
                 ParcelFileDescriptor pfd = getContentResolver().openFileDescriptor(uri,"r" );
@@ -269,7 +259,6 @@ public class BattleActivity extends AppCompatActivity {
 
     private Uri getImageUri(Context context,  Uri Image) {
         try {
-
             Bitmap inImage = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Image);
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             File tempDir= Environment.getExternalStorageDirectory();
