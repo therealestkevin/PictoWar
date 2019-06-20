@@ -144,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
                         BitmapDrawable bmpd = (BitmapDrawable) confirmedFace.getDrawable();
                         confirmedFace1.setImageBitmap(bmpd.getBitmap());
                         storeImage(bmpd.getBitmap());
-                        battleBtn.setVisibility(View.VISIBLE);
+                        //battleBtn.setVisibility(View.VISIBLE);
                         hasConfirmedFace = true;
 
                     }
