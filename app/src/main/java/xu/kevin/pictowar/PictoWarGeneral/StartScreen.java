@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import xu.kevin.pictowar.PictoDB.FaceInfo;
 import xu.kevin.pictowar.R;
@@ -49,7 +50,7 @@ public class StartScreen extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (canBattle == false) {
-
+                    Toast.makeText(getApplicationContext(), "No Picture Selected", Toast.LENGTH_LONG ).show();
 
                 } else {
                     AlertDialog.Builder builder = new AlertDialog.Builder(StartScreen.this);

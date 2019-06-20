@@ -66,6 +66,8 @@ public class MainActivity extends AppCompatActivity {
     private boolean hasConfirmedFace = false;
     private ImageView confirmedFace1;
 
+    private Button backBTN;
+
 
     private Button verifyButton;
 
@@ -96,7 +98,14 @@ public class MainActivity extends AppCompatActivity {
         selectFace = findViewById(R.id.selectFace);
         confirmedFace = findViewById(R.id.confirmedFace);
         faceList = findViewById(R.id.faceList);
-
+        backBTN = findViewById(R.id.BackBTN);
+        backBTN.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), StartScreen.class);
+                startActivity(intent);
+            }
+        });
         faceList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -112,7 +121,6 @@ public class MainActivity extends AppCompatActivity {
 
         if(localFaceInfo!=null && localFaceInfo.getUserFace()!=null){
             confirmedFace1.setImageBitmap(BitmapFactory.decodeFile(localFaceInfo.getImageFilePath()));
-            battleBtn.setVisibility(View.VISIBLE);
             hasConfirmedFace = true;
         }
 
