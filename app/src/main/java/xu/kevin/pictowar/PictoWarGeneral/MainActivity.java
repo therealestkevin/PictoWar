@@ -37,6 +37,7 @@ import android.widget.Toast;
 import com.microsoft.projectoxford.face.FaceServiceClient;
 import com.microsoft.projectoxford.face.FaceServiceRestClient;
 import com.microsoft.projectoxford.face.contract.Face;
+import com.microsoft.projectoxford.face.contract.VerifyResult;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -358,7 +359,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    /*
+
     private class VerificationTask extends AsyncTask<Void, Void, VerifyResult> {
         // The IDs of two face to verify.
         private UUID mFaceId;
@@ -396,7 +397,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
-    */
+
 
     private class DetectionTask extends AsyncTask<InputStream, Void, Face[]> {
         // Index indicates detecting in which of the two images.

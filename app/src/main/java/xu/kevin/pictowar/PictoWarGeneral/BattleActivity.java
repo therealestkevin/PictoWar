@@ -2,6 +2,7 @@ package xu.kevin.pictowar.PictoWarGeneral;
 
 import android.Manifest;
 import android.app.Activity;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
@@ -52,7 +53,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
+import java.util.UUID;
 
+import id.zelory.compressor.Compressor;
 import xu.kevin.pictowar.R;
 
 public class BattleActivity extends AppCompatActivity {
@@ -66,7 +70,9 @@ public class BattleActivity extends AppCompatActivity {
     private TextView opponentNm;
     private TextView connectionStatus;
     private Button sendImageBtn;
+    private UUID opponentUUID;
     private boolean isHost = true;
+    public static FaceViewModel battleModel;
     private static final String[] REQUIRED_PERMISSIONS =
             new String[] {
                     Manifest.permission.BLUETOOTH,
@@ -87,11 +93,17 @@ public class BattleActivity extends AppCompatActivity {
             new PayloadCallback() {
                 @Override
                 public void onPayloadReceived(String endpointId, Payload payload) {
+
+                    int type = payload.getType();
                     try{
-                        recievedImage = BitmapFactory.decodeFile(payload.asFile().asJavaFile().getAbsolutePath());
-
-                        int temp = 0;
-
+                        if(type == Payload.Type.BYTES){
+                                opponentUUID = getUUIDFromBytes(payload.asBytes());
+                                int temp = 0;
+                        }else {
+                            recievedImage = BitmapFactory.decodeFile(payload.asFile().asJavaFile().getAbsolutePath());
+                            //String path = MediaStore.Images.Media.insertImage(getContentResolver(), recievedImage, "temporary", "test");
+                            int temp = 0;
+                        }
                     }catch(NullPointerException e){
                         e.printStackTrace();
                     }
@@ -139,6 +151,11 @@ public class BattleActivity extends AppCompatActivity {
                         //setOpponentName(opponentName);
                         opponentNm.setText("Opponent Name: "+opponentName);
                         connectionStatus.setText("Connected");
+                        if(!isHost){
+                            UUID temp = battleModel.getFaceInfo().getUserFace();
+                            Payload userUUID = Payload.fromBytes(getBytesFromUUID(temp));
+                            Nearby.getConnectionsClient(getApplicationContext()).sendPayload(opponentEndpointId,userUUID);
+                        }
                     } else {
                         Toast.makeText(getApplicationContext(),"Connection Failed",Toast.LENGTH_LONG).show();
                     }
@@ -152,6 +169,7 @@ public class BattleActivity extends AppCompatActivity {
                 }
             };
 
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -159,6 +177,21 @@ public class BattleActivity extends AppCompatActivity {
         if (!hasPermissions(this, REQUIRED_PERMISSIONS)) {
             requestPermissions(REQUIRED_PERMISSIONS, REQUEST_CODE_REQUIRED_PERMISSIONS);
         }
+    }
+    public static byte[] getBytesFromUUID(UUID uuid) {
+        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+        bb.putLong(uuid.getMostSignificantBits());
+        bb.putLong(uuid.getLeastSignificantBits());
+
+        return bb.array();
+    }
+
+    public static UUID getUUIDFromBytes(byte[] bytes) {
+        ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+        Long high = byteBuffer.getLong();
+        Long low = byteBuffer.getLong();
+
+        return new UUID(high, low);
     }
     public static void verifyStoragePermissions(Activity activity) {
         // Check if we have write permission
@@ -212,6 +245,7 @@ public class BattleActivity extends AppCompatActivity {
         opponentNm = findViewById(R.id.opponentName);
         connectionStatus = findViewById(R.id.connectionStatus);
         sendImageBtn = findViewById(R.id.sendImageBtn);
+       battleModel = ViewModelProviders.of(this).get(FaceViewModel.class);
         if (getIntent() != null && getIntent().getExtras() != null) {
             Bundle bundle = getIntent().getExtras();
             if(bundle.getString("username")!=null){
@@ -234,6 +268,7 @@ public class BattleActivity extends AppCompatActivity {
 
         if(!isHost){
             startAdvertising();
+
         }else{
             startAdvertising();
             startDiscovery();
@@ -244,6 +279,23 @@ public class BattleActivity extends AppCompatActivity {
 
         if (resultCode == RESULT_OK) {
             Uri uri = data.getData();
+
+            try {
+                File compressedImageFile = new Compressor(this).compressToFile(new File(uri.getPath()));
+
+
+                Uri newUri = Uri.fromFile(compressedImageFile);
+                try{
+                    ParcelFileDescriptor pfd = getContentResolver().openFileDescriptor(newUri,"r" );
+                    Payload filePayload = Payload.fromFile(pfd);
+                    connectionsClient.sendPayload(opponentEndpointId,filePayload);
+                }catch(FileNotFoundException e){
+                    e.printStackTrace();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             try{
                 String temp = uri.getPath();
                 ParcelFileDescriptor pfd = getContentResolver().openFileDescriptor(uri,"r" );
@@ -266,7 +318,7 @@ public class BattleActivity extends AppCompatActivity {
             tempDir.mkdir();
             File tempFile = File.createTempFile("title", ".jpg", tempDir);
             //   ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            inImage.compress(Bitmap.CompressFormat.JPEG, 20, bytes);
+            inImage.compress(Bitmap.CompressFormat.PNG, 1, bytes);
             //Bitmap decoded = BitmapFactory.decodeStream(new ByteArrayInputStream(bytes.toByteArray()));
             byte[] bitmapData = bytes.toByteArray();
             //write the bytes in file
