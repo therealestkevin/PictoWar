@@ -12,6 +12,7 @@ import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.telecom.Call;
 import android.view.View;
 import android.widget.TextView;
 import android.graphics.Bitmap;
@@ -73,7 +74,7 @@ public class SelectImageActivity extends AppCompatActivity {
                         String bob = "ekrjhqewrqwe";
                     } else {
                         imageUri = data.getData();
-                        imageUri = compressURI(this, imageUri);
+                        //imageUri = compressURI(this, imageUri);
                         potentialPath = getRealPathFromURI(getApplicationContext(),imageUri);
 
                         String bob = "eqwqw";
@@ -82,7 +83,9 @@ public class SelectImageActivity extends AppCompatActivity {
                     Intent intent = new Intent();
                     intent.setData(imageUri);
                     intent.putExtra("realpath",potentialPath);
+
                     setResult(RESULT_OK, intent);
+
                     finish();
                 }
                 break;
@@ -121,6 +124,7 @@ public class SelectImageActivity extends AppCompatActivity {
             }
         }
     }
+
     private Uri compressURI(Context context, Uri imageUri) {
         try{
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(),imageUri);
