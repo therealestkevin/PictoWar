@@ -11,13 +11,17 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.annotation.CallSuper;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -31,6 +35,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.camerakit.CameraKitView;
 import com.google.android.gms.nearby.Nearby;
 import com.google.android.gms.nearby.connection.AdvertisingOptions;
 import com.google.android.gms.nearby.connection.ConnectionInfo;
@@ -44,6 +49,10 @@ import com.google.android.gms.nearby.connection.Payload;
 import com.google.android.gms.nearby.connection.PayloadCallback;
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate;
 import com.google.android.gms.nearby.connection.Strategy;
+import com.microsoft.projectoxford.face.FaceServiceClient;
+import com.microsoft.projectoxford.face.FaceServiceRestClient;
+import com.microsoft.projectoxford.face.contract.Face;
+import com.microsoft.projectoxford.face.contract.VerifyResult;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -51,13 +60,17 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 import id.zelory.compressor.Compressor;
 import xu.kevin.pictowar.R;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class BattleActivity extends AppCompatActivity {
     private String userName;
@@ -71,6 +84,7 @@ public class BattleActivity extends AppCompatActivity {
     private TextView connectionStatus;
     private Button sendImageBtn;
     private UUID opponentUUID;
+    private CameraKitView cameraKitView;
     private boolean isHost = true;
     public static FaceViewModel battleModel;
     private static final String[] REQUIRED_PERMISSIONS =
@@ -97,8 +111,16 @@ public class BattleActivity extends AppCompatActivity {
                     int type = payload.getType();
                     try{
                         if(type == Payload.Type.BYTES){
-                                opponentUUID = getUUIDFromBytes(payload.asBytes());
-                                int temp = 0;
+                              if(new String(payload.asBytes(),UTF_8).equals("YES")){
+                                    cameraKitView.setVisibility(View.GONE);
+                                    sendImageBtn.setVisibility(View.GONE);
+                                  recievedImg.setImageResource(R.drawable.ic_thumb_down_black_24dp);
+                                    connectionStatus.setText("YOU LOST");
+                                }else{
+                                    opponentUUID = getUUIDFromBytes(payload.asBytes());
+                                    int temp = 0;
+                                }
+
                         }else {
                             recievedImage = BitmapFactory.decodeFile(payload.asFile().asJavaFile().getAbsolutePath());
                             //String path = MediaStore.Images.Media.insertImage(getContentResolver(), recievedImage, "temporary", "test");
@@ -151,11 +173,19 @@ public class BattleActivity extends AppCompatActivity {
                         //setOpponentName(opponentName);
                         opponentNm.setText("Opponent Name: "+opponentName);
                         connectionStatus.setText("Connected");
-                        if(!isHost){
+
                             UUID temp = battleModel.getFaceInfo().getUserFace();
                             Payload userUUID = Payload.fromBytes(getBytesFromUUID(temp));
                             Nearby.getConnectionsClient(getApplicationContext()).sendPayload(opponentEndpointId,userUUID);
-                        }
+
+                        nameTextView.setText("Game Starting in 5 Seconds");
+                        Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            public void run() {
+                                cameraKitView.setVisibility(View.VISIBLE);
+                                sendImageBtn.setVisibility(View.VISIBLE);
+                            }
+                        }, 5000);
                     } else {
                         Toast.makeText(getApplicationContext(),"Connection Failed",Toast.LENGTH_LONG).show();
                     }
@@ -165,6 +195,7 @@ public class BattleActivity extends AppCompatActivity {
                 public void onDisconnected(String endpointId) {
                     connectionStatus.setText("Disconnected");
                    Toast.makeText(getApplicationContext(),"Disconnected, Game Ending",Toast.LENGTH_LONG).show();
+                   cameraKitView.setVisibility(View.GONE);
 
                 }
             };
@@ -173,6 +204,7 @@ public class BattleActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        cameraKitView.onStart();
         verifyStoragePermissions(this);
         if (!hasPermissions(this, REQUIRED_PERMISSIONS)) {
             requestPermissions(REQUIRED_PERMISSIONS, REQUEST_CODE_REQUIRED_PERMISSIONS);
@@ -222,7 +254,7 @@ public class BattleActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(
             int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
+        cameraKitView.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode != REQUEST_CODE_REQUIRED_PERMISSIONS) {
             return;
         }
@@ -255,14 +287,21 @@ public class BattleActivity extends AppCompatActivity {
             }
 
         }
+       cameraKitView = findViewById(R.id.battleCamera);
 
     connectionsClient = Nearby.getConnectionsClient(this);
 
         sendImageBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                    Intent intent = new Intent(getApplicationContext(), SelectImageActivity.class);
-                    startActivityForResult(intent, 0);
+
+               new sendingInfoTask().execute();
+
+
+
+
+                    //Intent intent = new Intent(getApplicationContext(), SelectImageActivity.class);
+                   // startActivityForResult(intent, 0);
             }
         });
 
@@ -274,6 +313,146 @@ public class BattleActivity extends AppCompatActivity {
             startDiscovery();
         }
     }
+    private class sendingInfoTask extends AsyncTask<Void,Void,Void>{
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            cameraKitView.captureImage(new  CameraKitView.ImageCallback() {
+                @Override
+                public void onImage(CameraKitView cameraKitView, final byte[] capturedImage) {
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inMutable = true;
+                    //Making a Bitmap to be able to be used by Face API
+                    Bitmap bmp = BitmapFactory.decodeByteArray(capturedImage, 0, capturedImage.length, options);
+                    Toast.makeText(getApplicationContext(),"Image Captured",Toast.LENGTH_SHORT);
+                    ByteArrayOutputStream output = new ByteArrayOutputStream();
+                    bmp.compress(Bitmap.CompressFormat.JPEG, 100, output);
+                    ByteArrayInputStream inputStream = new ByteArrayInputStream(output.toByteArray());
+                    try {
+                        Face[] allFaces = new DetectionTask().execute(inputStream).get();
+                        UUID[] allUUID = new UUID[allFaces.length];
+
+                        for(int i =0; i<allFaces.length;i++){
+                            allUUID[i] = allFaces[i].faceId;
+                        }
+
+                        boolean isWin = false;
+
+                        for(UUID i : allUUID){
+                            VerifyResult tempResult = new VerificationTask(opponentUUID,i).execute().get();
+                            String temp = "s";
+                            isWin = tempResult.isIdentical;
+                        }
+
+                        if(isWin){
+                            connectionsClient.sendPayload(opponentEndpointId,Payload.fromBytes("YES".getBytes(UTF_8)));
+                            cameraKitView.setVisibility(View.GONE);
+                            sendImageBtn.setVisibility(View.GONE);
+                            recievedImg.setImageResource(R.drawable.ic_thumb_up_black_24dp);
+                            connectionStatus.setText("YOU WON");
+                        }
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }catch (NullPointerException e){
+                        e.printStackTrace();
+                    }
+
+
+                }
+            });
+
+            return null;
+        }
+    }
+    private class DetectionTask extends AsyncTask<InputStream, Void, Face[]> {
+        // Index indicates detecting in which of the two images.
+
+        private boolean mSucceed = true;
+
+
+
+        @Override
+        protected Face[] doInBackground(InputStream... params) {
+
+            FaceServiceClient faceServiceClient = new FaceServiceRestClient(getString(R.string.endpoint), getString(R.string.subscription_key));
+            //Use Direct Reference Next Time instead of indirect Application reference that doesn't work
+            //PictoFaceClient.getFaceServiceClient();
+            try{
+
+
+                // Start detection.
+                return faceServiceClient.detect(
+                        params[0],  /* Input stream of image to detect */
+                        true,       /* Whether to return face ID */
+                        false,       // return face landmarks
+                        /* Which face attributes to analyze, currently we support:
+                           age,gender,headPose,smile,facialHair */
+                        new FaceServiceClient.FaceAttributeType[]{FaceServiceClient.FaceAttributeType.Age, FaceServiceClient.FaceAttributeType.Emotion
+                                , FaceServiceClient.FaceAttributeType.Gender, FaceServiceClient.FaceAttributeType.Smile});
+            }  catch (Exception e) {
+                mSucceed = false;
+                return null;
+            }
+        }
+    }
+    private class VerificationTask extends AsyncTask<Void, Void, VerifyResult> {
+        // The IDs of two face to verify.
+        private UUID mFaceId;
+        private UUID mFaceId1;
+
+        VerificationTask(UUID faceId, UUID faceId1) {
+            mFaceId = faceId;
+            mFaceId1 = faceId1;
+        }
+
+        @Override
+        protected VerifyResult doInBackground(Void... params) {
+
+            FaceServiceClient faceServiceClient = new FaceServiceRestClient(getString(R.string.endpoint), getString(R.string.subscription_key));
+            try {
+
+
+                // Start verification.
+                return faceServiceClient.verify(
+                        mFaceId,      //The first face ID to verify
+                        mFaceId1);     // The second face ID to verify
+            } catch (Exception e) {
+
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(VerifyResult result) {
+            if (result != null) {
+
+
+            }
+
+
+        }
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        cameraKitView.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        cameraKitView.onPause();
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        cameraKitView.onStop();
+        super.onStop();
+    }
+
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
