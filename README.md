@@ -1,5 +1,9 @@
 PictoWar
 
+Android Application:
+
+Objective: Be the first one to take a picture of the opponent's face.
+
 Instructions:
 
 1. Obtain 2 Android Phones with Android 7.0 and above and with bluetooth capabilities.
