@@ -3,32 +3,24 @@ package xu.kevin.pictowar.PictoWarGeneral;
 import android.Manifest;
 import android.app.Activity;
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
-import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.annotation.CallSuper;
-import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.CursorLoader;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -61,8 +53,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -96,6 +86,13 @@ public class BattleActivity extends AppCompatActivity {
                     Manifest.permission.ACCESS_COARSE_LOCATION,
 
             };
+
+
+    private static final float zoomIn =2f;
+
+    private static final float zoomOut = 1f;
+
+    private boolean isZoomed = false;
 
     private static final int REQUEST_CODE_REQUIRED_PERMISSIONS = 1;
 
@@ -288,7 +285,36 @@ public class BattleActivity extends AppCompatActivity {
 
         }
        cameraKitView = findViewById(R.id.battleCamera);
+        cameraKitView.setGestureListener(new CameraKitView.GestureListener() {
+            @Override
+            public void onTap(CameraKitView cameraKitView, float v, float v1) {
 
+            }
+
+            @Override
+            public void onLongTap(CameraKitView cameraKitView, float v, float v1) {
+
+            }
+
+            @Override
+            public void onDoubleTap(CameraKitView cameraKitView, float v, float v1) {
+
+                if(isZoomed){
+                    cameraKitView.setZoomFactor(zoomOut);
+                }else{
+                    cameraKitView.setZoomFactor(zoomIn);
+                    isZoomed=true;
+                }
+
+            }
+
+            @Override
+            public void onPinch(CameraKitView cameraKitView, float v, float v1, float v2) {
+                //Flesh out zooming functionality later
+                //Need to figure what the three floats represent in order
+                //Might use the onDoubleTap for a simpler approach to this issue
+            }
+        });
     connectionsClient = Nearby.getConnectionsClient(this);
 
         sendImageBtn.setOnClickListener(new View.OnClickListener() {
@@ -328,6 +354,9 @@ public class BattleActivity extends AppCompatActivity {
                     ByteArrayOutputStream output = new ByteArrayOutputStream();
                     bmp.compress(Bitmap.CompressFormat.JPEG, 100, output);
                     ByteArrayInputStream inputStream = new ByteArrayInputStream(output.toByteArray());
+
+
+
                     try {
                         Face[] allFaces = new DetectionTask().execute(inputStream).get();
                         UUID[] allUUID = new UUID[allFaces.length];
@@ -346,6 +375,8 @@ public class BattleActivity extends AppCompatActivity {
 
                         if(isWin){
                             connectionsClient.sendPayload(opponentEndpointId,Payload.fromBytes("YES".getBytes(UTF_8)));
+
+
                             cameraKitView.setVisibility(View.GONE);
                             sendImageBtn.setVisibility(View.GONE);
                             recievedImg.setImageResource(R.drawable.ic_thumb_up_black_24dp);
@@ -434,6 +465,17 @@ public class BattleActivity extends AppCompatActivity {
 
         }
     }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        if ((keyCode == KeyEvent.KEYCODE_BACK))
+        {
+            finish();
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
