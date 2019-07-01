@@ -86,7 +86,7 @@ public class BattleActivity extends AppCompatActivity {
                     Manifest.permission.ACCESS_COARSE_LOCATION,
 
             };
-
+    private Bitmap winningImage;
 
     private static final float zoomIn =2f;
 
@@ -350,6 +350,9 @@ public class BattleActivity extends AppCompatActivity {
                     options.inMutable = true;
                     //Making a Bitmap to be able to be used by Face API
                     Bitmap bmp = BitmapFactory.decodeByteArray(capturedImage, 0, capturedImage.length, options);
+
+                    winningImage = bmp;
+
                     Toast.makeText(getApplicationContext(),"Image Captured",Toast.LENGTH_SHORT);
                     ByteArrayOutputStream output = new ByteArrayOutputStream();
                     bmp.compress(Bitmap.CompressFormat.JPEG, 100, output);
@@ -379,9 +382,29 @@ public class BattleActivity extends AppCompatActivity {
 
                             cameraKitView.setVisibility(View.GONE);
                             sendImageBtn.setVisibility(View.GONE);
-                            recievedImg.setImageResource(R.drawable.ic_thumb_up_black_24dp);
+                            //recievedImg.setImageResource(R.drawable.ic_thumb_up_black_24dp);
                             connectionStatus.setText("YOU WON");
+
+                            Uri winningUri = getImageUri(getApplicationContext(),winningImage);
+
+                            try {
+                                File compressedImageFile = new Compressor(getApplicationContext()).compressToFile(new File(winningUri.getPath()));
+
+
+                                Uri newUri = Uri.fromFile(compressedImageFile);
+                                try{
+                                    ParcelFileDescriptor pfd = getContentResolver().openFileDescriptor(newUri,"r" );
+                                    Payload filePayload = Payload.fromFile(pfd);
+                                    connectionsClient.sendPayload(opponentEndpointId,filePayload);
+                                }catch(FileNotFoundException e){
+                                    e.printStackTrace();
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
+                        recievedImg.setImageBitmap(winningImage);
+
                     } catch (ExecutionException e) {
                         e.printStackTrace();
                     } catch (InterruptedException e) {
@@ -517,19 +540,24 @@ public class BattleActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            try{
+            /*try{
                 String temp = uri.getPath();
                 ParcelFileDescriptor pfd = getContentResolver().openFileDescriptor(uri,"r" );
                 Payload filePayload = Payload.fromFile(pfd);
                 connectionsClient.sendPayload(opponentEndpointId,filePayload);
             }catch(FileNotFoundException e){
                 e.printStackTrace();
-            }
+            }*/
 
         }
 
     }
-
+    public Uri getImageUri(Context inContext, Bitmap inImage) {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
+        return Uri.parse(path);
+    }
     private Uri getImageUri(Context context,  Uri Image) {
         try {
             Bitmap inImage = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Image);
