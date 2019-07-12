@@ -4,18 +4,18 @@ package xu.kevin.pictowar.PictoWarGeneral;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.telecom.Call;
 import android.view.View;
 import android.widget.TextView;
-import android.graphics.Bitmap;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -26,6 +26,7 @@ import xu.kevin.pictowar.R;
 
 // The activity for the user to select a image and to detect faces in the image.
 public class SelectImageActivity extends AppCompatActivity {
+    private String [] permissions = {"android.permission.WRITE_EXTERNAL_STORAGE", "android.permission.CAMERA"};
     // Flag to indicate the request of the next task to be performed
     private static final int REQUEST_TAKE_PHOTO = 0;
     private static final int REQUEST_SELECT_IMAGE_IN_ALBUM = 1;
@@ -39,6 +40,10 @@ public class SelectImageActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_image);
+        int requestCode = 200;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermissions(permissions, requestCode);
+        }
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
     }
@@ -71,13 +76,13 @@ public class SelectImageActivity extends AppCompatActivity {
 
                         potentialPath = imageUri.getPath();
 
-                        String bob = "ekrjhqewrqwe";
+
                     } else {
                         imageUri = data.getData();
                         //imageUri = compressURI(this, imageUri);
                         potentialPath = getRealPathFromURI(getApplicationContext(),imageUri);
 
-                        String bob = "eqwqw";
+
                     }
 
                     Intent intent = new Intent();

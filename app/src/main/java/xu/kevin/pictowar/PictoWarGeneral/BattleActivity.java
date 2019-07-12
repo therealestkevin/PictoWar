@@ -27,6 +27,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.camerakit.CameraKit;
 import com.camerakit.CameraKitView;
 import com.google.android.gms.nearby.Nearby;
 import com.google.android.gms.nearby.connection.AdvertisingOptions;
@@ -73,6 +74,7 @@ public class BattleActivity extends AppCompatActivity {
     private TextView opponentNm;
     private TextView connectionStatus;
     private Button sendImageBtn;
+    private Button switchCamera;
     private UUID opponentUUID;
     private CameraKitView cameraKitView;
     private boolean isHost = true;
@@ -111,8 +113,10 @@ public class BattleActivity extends AppCompatActivity {
                               if(new String(payload.asBytes(),UTF_8).equals("YES")){
                                     cameraKitView.setVisibility(View.GONE);
                                     sendImageBtn.setVisibility(View.GONE);
+                                    switchCamera.setVisibility(View.GONE);
                                   recievedImg.setImageResource(R.drawable.ic_thumb_down_black_24dp);
                                     connectionStatus.setText("YOU LOST");
+                                    nameTextView.setText("YOU LOST");
                                 }else{
                                     opponentUUID = getUUIDFromBytes(payload.asBytes());
                                     int temp = 0;
@@ -181,6 +185,7 @@ public class BattleActivity extends AppCompatActivity {
                             public void run() {
                                 cameraKitView.setVisibility(View.VISIBLE);
                                 sendImageBtn.setVisibility(View.VISIBLE);
+                                switchCamera.setVisibility(View.VISIBLE);
                             }
                         }, 5000);
                     } else {
@@ -274,16 +279,18 @@ public class BattleActivity extends AppCompatActivity {
         opponentNm = findViewById(R.id.opponentName);
         connectionStatus = findViewById(R.id.connectionStatus);
         sendImageBtn = findViewById(R.id.sendImageBtn);
+        switchCamera = findViewById(R.id.switchCamera);
        battleModel = ViewModelProviders.of(this).get(FaceViewModel.class);
         if (getIntent() != null && getIntent().getExtras() != null) {
             Bundle bundle = getIntent().getExtras();
             if(bundle.getString("username")!=null){
                 userName = bundle.getString("username");
-                nameTextView.setText("Your Name: "+userName);
+                nameTextView.setText("Your Name: " + userName);
                 isHost = bundle.getBoolean("bool");
             }
 
         }
+
        cameraKitView = findViewById(R.id.battleCamera);
         cameraKitView.setGestureListener(new CameraKitView.GestureListener() {
             @Override
@@ -313,6 +320,16 @@ public class BattleActivity extends AppCompatActivity {
                 //Flesh out zooming functionality later
                 //Need to figure what the three floats represent in order
                 //Might use the onDoubleTap for a simpler approach to this issue
+            }
+        });
+        switchCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(cameraKitView.getFacing() == CameraKit.FACING_BACK){
+                    cameraKitView.setFacing(CameraKit.FACING_FRONT);
+                }else{
+                    cameraKitView.setFacing(CameraKit.FACING_BACK);
+                }
             }
         });
     connectionsClient = Nearby.getConnectionsClient(this);
@@ -353,7 +370,7 @@ public class BattleActivity extends AppCompatActivity {
 
                     winningImage = bmp;
 
-                    Toast.makeText(getApplicationContext(),"Image Captured",Toast.LENGTH_SHORT);
+                    Toast.makeText(getApplicationContext(),"Image Captured",Toast.LENGTH_SHORT).show();
                     ByteArrayOutputStream output = new ByteArrayOutputStream();
                     bmp.compress(Bitmap.CompressFormat.JPEG, 100, output);
                     ByteArrayInputStream inputStream = new ByteArrayInputStream(output.toByteArray());
@@ -382,8 +399,10 @@ public class BattleActivity extends AppCompatActivity {
 
                             cameraKitView.setVisibility(View.GONE);
                             sendImageBtn.setVisibility(View.GONE);
+                            switchCamera.setVisibility(View.GONE);
                             //recievedImg.setImageResource(R.drawable.ic_thumb_up_black_24dp);
                             connectionStatus.setText("YOU WON");
+                            nameTextView.setText("YOU LOST");
 
                             Uri winningUri = getImageUri(getApplicationContext(),winningImage);
 
@@ -484,8 +503,6 @@ public class BattleActivity extends AppCompatActivity {
 
 
             }
-
-
         }
     }
 
