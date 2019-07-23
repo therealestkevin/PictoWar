@@ -3,6 +3,7 @@ package xu.kevin.pictowar.PictoWarGeneral;
 import android.Manifest;
 import android.app.Activity;
 import android.arch.lifecycle.ViewModelProviders;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -402,7 +403,7 @@ public class BattleActivity extends AppCompatActivity {
                             switchCamera.setVisibility(View.GONE);
                             //recievedImg.setImageResource(R.drawable.ic_thumb_up_black_24dp);
                             connectionStatus.setText("YOU WON");
-                            nameTextView.setText("YOU LOST");
+                            nameTextView.setText("YOU WON");
 
                             Uri winningUri = getImageUri(getApplicationContext(),winningImage);
 
@@ -435,7 +436,8 @@ public class BattleActivity extends AppCompatActivity {
 
                 }
             });
-
+            BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+            adapter.disable();
             return null;
         }
     }
@@ -505,13 +507,21 @@ public class BattleActivity extends AppCompatActivity {
             }
         }
     }
-
+    @Override
+    public void onBackPressed(){
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        adapter.disable();
+        finish();
+    }
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
         if ((keyCode == KeyEvent.KEYCODE_BACK))
         {
+            BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+            adapter.disable();
             finish();
+
         }
         return super.onKeyDown(keyCode, event);
     }
