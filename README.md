@@ -1,5 +1,7 @@
 PictoWar
 
+https://play.google.com/store/apps/details?id=xu.kevin.pictowar
+
 Android Application:
 
 Objective: Be the first one to take a picture of the opponent's face.
